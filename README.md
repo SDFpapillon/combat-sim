@@ -8,10 +8,10 @@ Simulateur de combat pour jeux de figurines : saisissez le profil d'une attaque 
 
 ## Fonctionnalités
 
-- Règles de la 10e édition : Force contre Endurance, PA, sauvegarde invulnérable, couvert, Insensible à la douleur, -1 aux dégâts.
+- Règles de la 11e édition : Force contre Endurance, PA, sauvegarde invulnérable, couvert (-1 à la CT des tirs), Insensible à la douleur, -1 aux dégâts.
 - Plusieurs armes par unité (profil type fiche : Nb, A, CT/CC, F, PA, D), chacune activable, dupliquable ; dégâts moyens par arme.
 - Expressions de dés libres pour les attaques et les dégâts : `3`, `D6`, `2D6`, `D3+1`, `D6+2`…
-- Mots-clés d'armes : Torrent, Touches fatales, Touches soutenues X, Blessures dévastatrices, Jumelée, Explosion, Anti-X, Fusion X, Ignore le couvert, touche critique sur 5+/4+.
+- Armes de tir ou de mêlée ; mots-clés : Torrent, Touches fatales, Touches soutenues X, Blessures dévastatrices, Jumelée, Lourde, Lance, Explosion X, Fendoir X, Anti-X, Fusion X, Ignore le couvert, touche critique sur 5+/4+.
 - Modificateurs (+1/-1 pour toucher et blesser) et relances (les 1 ou les échecs) au niveau de l'unité.
 - Dégâts appliqués figurine par figurine, sans report des dégâts en excès ; la figurine blessée reste ciblée d'une arme à l'autre.
 - Unités enregistrées dans le navigateur (« Mes unités »), état conservé entre deux visites, bouton « Copier le lien » pour partager une configuration.

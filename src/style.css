@@ -159,6 +159,11 @@ body {
   color: var(--text); font: inherit; font-weight: 650; padding: 2px 0;
 }
 .w-name:focus { outline: none; border-bottom-color: var(--accent); }
+.type {
+  background: color-mix(in srgb, var(--tgt) 18%, transparent); color: var(--tgt); border: 0;
+  border-radius: 999px; padding: 3px 10px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+}
+.type:hover { filter: brightness(1.2); }
 .icon {
   background: transparent; border: 1px solid transparent; color: var(--muted); border-radius: 6px;
   width: 28px; height: 28px; cursor: pointer; font-size: 14px;
@@ -186,7 +191,7 @@ body {
 .chip input { position: absolute; opacity: 0; pointer-events: none; }
 .chip.on { background: var(--accent); border-color: var(--accent); color: #1a1406; font-weight: 600; }
 .chip:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-.kw-sel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+.kw-sel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
 .kw-sel label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--muted); }
 @media (max-width: 480px) {
   .stats-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }

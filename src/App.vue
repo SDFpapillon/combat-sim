@@ -15,17 +15,18 @@ const rerollOpts = [
 ]
 
 const BLANK_WEAPON = {
-  name: 'Arme', enabled: true, count: 1, attacks: '1', hit: 3, strength: 4, ap: 0, damage: '1',
-  torrent: false, lethal: false, devastating: false, twinLinked: false, blast: false, ignoresCover: false,
-  sustained: 0, anti: null, melta: 0, critHit: 6,
+  name: 'Arme', enabled: true, melee: false, count: 1, attacks: '1', hit: 3, strength: 4, ap: 0, damage: '1',
+  torrent: false, lethal: false, devastating: false, twinLinked: false, heavy: false, lance: false,
+  ignoresCover: false, blast: 0, cleave: 0, sustained: 0, anti: null, melta: 0, critHit: 6,
 }
 const WEAPONS = {
   'Fusil':           { count: 10, attacks: '2', hit: 3, strength: 4, ap: 0, damage: '1' },
-  'Arme lourde':     { attacks: 'D6', hit: 4, strength: 9, ap: -3, damage: 'D6' },
+  'Arme lourde':     { attacks: 'D6', hit: 4, strength: 9, ap: -3, damage: 'D6', heavy: true, blast: 1 },
   'Fusion':          { attacks: '1', hit: 3, strength: 9, ap: -4, damage: 'D6', melta: 2 },
   'Lance-flammes':   { attacks: 'D6', strength: 4, torrent: true, ignoresCover: true },
   'Canon rotatif':   { attacks: '6', hit: 3, strength: 5, ap: -1, damage: '1', sustained: 1 },
-  'Arme de mêlée':   { count: 5, attacks: '3', hit: 3, strength: 5, ap: -2, damage: '2', lethal: true },
+  'Arme de mêlée':   { count: 5, attacks: '3', hit: 3, strength: 5, ap: -2, damage: '2', melee: true, lethal: true },
+  'Lance de charge': { attacks: '2', hit: 3, strength: 6, ap: -2, damage: '2', melee: true, lance: true },
 }
 const DEFENSES = {
   'Infanterie légère': { models: 10, woundsPerModel: 1, toughness: 3, save: 5, invuln: null, fnp: null },
@@ -45,7 +46,10 @@ const newWeapon = (o = {}) => ({ ...BLANK_WEAPON, ...o, id: nextId++ })
 /** Complète une unité (ancienne sauvegarde, lien partagé…) avec les valeurs par défaut. */
 const normalizeUnit = (u) => ({
   ...BLANK_UNIT, ...u,
-  weapons: (u.weapons ?? []).map((w) => newWeapon({ ...w, attacks: String(w.attacks), damage: String(w.damage) })),
+  weapons: (u.weapons ?? []).map((w) => newWeapon({
+    ...w, attacks: String(w.attacks), damage: String(w.damage),
+    blast: w.blast === true ? 1 : Number(w.blast) || 0, // ancien format : Explosion cochée
+  })),
 })
 
 const DEFAULT_STATE = {
@@ -215,7 +219,7 @@ const atLeast = computed(() => {
       <Seg label="Sauvegarde invulnérable" :options="invOpts" v-model="tgt.invuln" />
       <Seg label="Insensible à la douleur" :options="fnpOpts" v-model="tgt.fnp" />
       <fieldset class="opts">
-        <label><input type="checkbox" v-model="tgt.cover" /> À couvert (+1 à la sauvegarde d'armure)</label>
+        <label><input type="checkbox" v-model="tgt.cover" /> À couvert (-1 à la CT des tirs)</label>
         <label><input type="checkbox" v-model="tgt.damageReduction" /> -1 aux dégâts subis</label>
       </fieldset>
     </section>

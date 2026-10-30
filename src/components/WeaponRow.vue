@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { parseDice, woundTarget, effectiveSave } from '../engine.js'
+import { parseDice, woundTarget, effectiveSave, hitTarget } from '../engine.js'
 
 const props = defineProps({
   w: Object,        // profil d'arme (modifié en place)
@@ -16,13 +16,16 @@ const KEYWORDS = [
   ['lethal', 'Touches fatales', 'Lethal Hits : une touche critique blesse automatiquement'],
   ['devastating', 'Blessures dévastatrices', 'Devastating Wounds : une blessure critique ignore toute sauvegarde'],
   ['twinLinked', 'Jumelée', 'Twin-linked : relance les jets pour blesser'],
-  ['blast', 'Explosion', 'Blast : +1 attaque par tranche de 5 figurines ciblées'],
+  ['heavy', 'Lourde (≤ 3" de mouvement)', 'Heavy : +1 pour toucher au tir si l\'unité a bougé de 3" au plus'],
+  ['lance', 'Lance (a chargé)', 'Lance : +1 pour blesser si l\'unité a chargé ce tour'],
   ['ignoresCover', 'Ignore le couvert', 'Ignores Cover'],
 ]
 const active = computed(() => {
   const w = props.w
   const out = KEYWORDS.filter(([k]) => w[k]).map(([, t]) => t)
   if (w.sustained) out.push(`Touches soutenues ${w.sustained}`)
+  if (w.blast) out.push(`Explosion ${w.blast}`)
+  if (w.cleave) out.push(`Fendoir ${w.cleave}`)
   if (w.anti) out.push(`Anti ${w.anti}+`)
   if (w.melta) out.push(`Fusion ${w.melta}`)
   if (w.critHit < 6) out.push(`Critique ${w.critHit}+`)
@@ -32,8 +35,9 @@ const active = computed(() => {
 const hint = computed(() => {
   const t = props.target
   const need = woundTarget(props.w.strength, t.toughness)
-  const es = effectiveSave(t.save, props.w.ap, t.invuln, t.cover && !props.w.ignoresCover)
-  return `Blesse sur ${need}+ · sauvegarde ${es > 6 ? 'impossible' : es + '+'}`
+  const es = effectiveSave(t.save, props.w.ap, t.invuln)
+  const hit = props.w.torrent ? 'Touche auto' : `Touche sur ${Math.min(7, hitTarget(props.w, t))}+`
+  return `${hit} · blesse sur ${need}+ · sauvegarde ${es > 6 ? 'impossible' : es + '+'}`
 })
 
 // PA saisie « 2 » ou « -2 » : toujours stockée en négatif
@@ -49,13 +53,16 @@ function setAp(e) {
     <div class="w-head">
       <input type="checkbox" v-model="w.enabled" :aria-label="`Inclure ${w.name}`" title="Inclure cette arme" />
       <input class="w-name" v-model="w.name" aria-label="Nom de l'arme" />
+      <button type="button" class="type" @click="w.melee = !w.melee"
+              :title="w.melee ? 'Arme de mêlée (cliquer pour passer en tir)' : 'Arme de tir (cliquer pour passer en mêlée)'">
+        {{ w.melee ? 'Mêlée' : 'Tir' }}</button>
       <button type="button" class="icon" @click="$emit('duplicate')" title="Dupliquer" aria-label="Dupliquer l'arme">⧉</button>
       <button type="button" class="icon" @click="$emit('remove')" title="Supprimer" aria-label="Supprimer l'arme">✕</button>
     </div>
     <div class="stats-row">
       <label><span>Nb</span><input type="number" min="1" max="30" inputmode="numeric" v-model.number="w.count" title="Nombre de figurines équipées" /></label>
       <label><span>A</span><input v-model.trim="w.attacks" :class="{ bad: !validA }" title="Attaques : 3, D6, 2D6, D3+1…" /></label>
-      <label><span>CT/CC</span>
+      <label><span>{{ w.melee ? 'CC' : 'CT' }}</span>
         <select v-model.number="w.hit" :disabled="w.torrent">
           <option v-for="v in [2, 3, 4, 5, 6]" :key="v" :value="v">{{ v }}+</option>
         </select></label>
@@ -72,6 +79,16 @@ function setAp(e) {
         </label>
       </div>
       <div class="kw-sel">
+        <label title="Blast X : +X attaques par tranche de 5 figurines ciblées">Explosion
+          <select v-model.number="w.blast">
+            <option :value="0">—</option>
+            <option v-for="v in [1, 2, 3]" :key="v" :value="v">{{ v }}</option>
+          </select></label>
+        <label title="Cleave X : +X attaques par tranche de 5 figurines ciblées (une seule cible)">Fendoir
+          <select v-model.number="w.cleave">
+            <option :value="0">—</option>
+            <option v-for="v in [1, 2, 3]" :key="v" :value="v">{{ v }}</option>
+          </select></label>
         <label title="Sustained Hits : touches supplémentaires sur une touche critique">Touches soutenues
           <select v-model="w.sustained">
             <option :value="0">—</option>

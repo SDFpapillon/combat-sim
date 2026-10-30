@@ -33,7 +33,7 @@ describe('moteur de calcul', () => {
   })
 })
 
-describe('règles 10e édition', () => {
+describe('règles 11e édition', () => {
   it('Force contre Endurance', () => {
     expect(woundTarget(8, 4)).toBe(2)
     expect(woundTarget(5, 4)).toBe(3)
@@ -42,11 +42,28 @@ describe('règles 10e édition', () => {
     expect(woundTarget(4, 8)).toBe(6)
   })
 
-  it('invulnérable non modifiée, couvert sauf 3+ contre PA 0', () => {
+  it('invulnérable non modifiée par la PA', () => {
     expect(effectiveSave(3, -3, 4)).toBe(4)
-    expect(effectiveSave(4, -1, null, true)).toBe(4)
-    expect(effectiveSave(3, 0, null, true)).toBe(3)
-    expect(effectiveSave(3, -1, null, true)).toBe(3)
+    expect(effectiveSave(3, -1, 4)).toBe(4)
+    expect(effectiveSave(2, -1, 4)).toBe(3)
+  })
+
+  it('couvert : -1 à la CT des tirs, sans effet en mêlée, en Torrent ou avec Ignore le couvert', () => {
+    const covered = target({ save: 7, cover: true })
+    near(run([weapon()], covered).meanUnsaved, 10 * (3 / 6) * 0.5)
+    near(run([weapon({ melee: true })], covered).meanUnsaved, 10 * (4 / 6) * 0.5)
+    near(run([weapon({ ignoresCover: true })], covered).meanUnsaved, 10 * (4 / 6) * 0.5)
+  })
+
+  it('Lourde (+1 touche) et Lance (+1 blessure)', () => {
+    near(run([weapon({ hit: 4, heavy: true })], target({ save: 7 })).meanUnsaved, 10 * (4 / 6) * 0.5)
+    near(run([weapon({ lance: true })], target({ save: 7 })).meanUnsaved, 10 * (4 / 6) * (4 / 6))
+  })
+
+  it('Explosion 2 : +2 attaques par tranche de 5 figurines', () => {
+    // 1 att. + 2 × 2 (cible de 10) = 5 attaques, torrent, blesse 2+, pas de sauvegarde
+    const res = run([weapon({ attacks: 1, torrent: true, strength: 8, blast: 2 })], target({ models: 10, save: 7 }))
+    near(res.meanUnsaved, 5 * (5 / 6))
   })
 
   it('expressions de dés', () => {
@@ -69,7 +86,7 @@ describe('règles 10e édition', () => {
     near(res.meanUnsaved, 10 * (4 / 6 + 1 / 6) * 0.5)
   })
 
-  it('Blessures dévastatrices : aucune sauvegarde sur un 6 pour blesser', () => {
+  it('Blessures dévastatrices : blessures mortelles sur un 6 pour blesser', () => {
     const res = run([weapon({ devastating: true })], target({ save: 2, invuln: 2 }))
     // blessures normales (4,5) sauvegardées sur 2+ (5/6), les 6 passent
     near(res.meanUnsaved, 10 * (4 / 6) * (1 / 6 + (2 / 6) * (1 / 6)))
